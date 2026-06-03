@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Подача заявки</title>
+    <!-- Официальный скрипт Telegram WebApp -->
+    <script src="https://telegram.org"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: var(--tg-theme-bg-color, #ffffff); color: var(--tg-theme-text-color, #000000); padding: 15px; margin: 0; }
+        h2 { font-size: 20px; margin-top: 5px; margin-bottom: 20px; color: var(--tg-theme-text-color, #000000); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+        input, textarea, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; background-color: var(--tg-theme-secondary-bg-color, #f4f4f5); color: var(--tg-theme-text-color, #000000); }
+        input:focus, textarea:focus, select:focus { border-color: var(--tg-theme-button-color, #2481cc); outline: none; }
+        .btn { background-color: var(--tg-theme-button-color, #2481cc); color: var(--tg-theme-button-text-color, #ffffff); padding: 12px; border: none; border-radius: 8px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <h2>Новая заявка</h2>
+    <form id="orderForm">
+        <div class="form-group">
+            <label>Номер разрешения:</label>
+            <input type="text" id="permit_num" required maxlength="30">
+        </div>
+        <div class="form-group">
+            <label>Организация / ФИО:</label>
+            <input type="text" id="org_fio" required maxlength="80">
+        </div>
+        <div class="form-group">
+            <label>Номер телефона:</label>
+            <input type="tel" id="phone" placeholder="+375... или 80..." required>
+        </div>
+        <div class="form-group">
+            <label>Адрес раскопки:</label>
+            <input type="text" id="address" required maxlength="100">
+        </div>
+        
+        <!-- Время встречи выбирается ПЕРВЫМ -->
+        <div class="form-group">
+            <label>Время встречи (с 10:00 до 15:00):</label>
+            <select id="meeting_time" required>
+                <option value="" disabled selected>Выберите время встречи...</option>
+                <option value="10:00">10:00</option>
+                <option value="11:00">11:00</option>
+                <option value="12:00">12:00</option>
+                <option value="13:00">13:00</option>
+                <option value="14:00">14:00</option>
+                <option value="15:00">15:00</option>
+            </select>
+        </div>
+
+        <!-- Поле даты БЕЗ тега disabled (защита от залипания) -->
+        <div class="form-group" id="date_group" style="pointer-events: none; opacity: 0.5;">
+            <label>Дата встречи:</label>
+            <input type="date" id="meeting_date" required>
+        </div>
+
+        <div class="form-group">
+            <label>Comment:</label>
+            <textarea id="comment" rows="3" maxlength="200"></textarea>
+        </div>
+        <button type="submit" class="btn">Отправить заявку</button>
+    </form>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        // Разбираем список занятых слотов из адресной строки
+        let busySlots = {};
+        const urlParams = new URLSearchParams(window.location.search);
+        const busyParam = urlParams.get('busy');
+        if (busyParam) {
+            try {
+                busySlots = JSON.parse(decodeURIComponent(busyParam));
+            } catch(e) {
+                console.error("Ошибка парсинга занятых слотов", e);
+            }
+        }
+
+        const dateInput = document.getElementById('meeting_date');
+        const timeSelect = document.getElementById('meeting_time');
+        const dateGroup = document.getElementById('date_group');
+
+        // Управление активацией календаря после выбора времени
+        timeSelect.addEventListener('change', function() {
+            const selectedTime = this.value;
+            dateInput.value = ""; // Очищаем старую дату
+            
+            if (selectedTime) {
+                // Включаем доступность поля через CSS
+                dateGroup.style.pointerEvents = "auto";
+                dateGroup.style.opacity = "1";
+                
+                // Самый стабильный формат получения даты YYYY-MM-DD без сбоев кэша
+                const d = new Date();
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                const todayStr = `${year}-${month}-${day}`;
+                
+                dateInput.setAttribute('min', todayStr);
+            } else {
+                // Блокируем обратно
+                dateGroup.style.pointerEvents = "none";
+                dateGroup.style.opacity = "0.5";
+            }
+        });
+
+        // Проверка даты на занятость на лету
+        dateInput.addEventListener('input', function() {
+            const selectedTime = timeSelect.value;
+            const selectedDate = this.value; 
+            
+            if (busySlots[selectedTime] && busySlots[selectedTime].includes(selectedDate)) {
+                tg.showAlert("⚠️ Это время на выбранную дату уже занято!\n\nПожалуйста, укажите другой день или измените час встречи.");
+                this.value = ""; // Стираем только некорректную дату
+            }
+        });
+
+        // Отправка формы
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const phoneInput = document.getElementById('phone');
+            const phone = phoneInput.value.trim().replace(/\s+/g, '');
+            
+            let isValidPhone = false;
+            if (phone.startsWith('+375') && phone.length >= 12) {
+                isValidPhone = true;
+            } else if (phone.startsWith('80') && phone.length === 11) {
+                isValidPhone = true;
+            }
+
+            // Умная очистка при ошибке номера
+            if (!isValidPhone) {
+                tg.showAlert("❌ Неверный формат номера телефона!\n\nИспользуйте международный формат +375... или городской 80... (11 цифр).");
+                phoneInput.value = ""; // Очищаем только телефон
+                phoneInput.focus();
+                return;
+            }
+
+            const data = {
+                permit_num: document.getElementById('permit_num').value,
+                org_fio: document.getElementById('org_fio').value,
+                phone: phone,
+                address: document.getElementById('address').value,
+                meeting_date: dateInput.value, 
+                meeting_time: timeSelect.value,
+                comment: document.getElementById('comment').value || '-'
+            };
+
+            // Нативное всплывающее окно Telegram об успехе перед отправкой
+            tg.showPopup({
+                title: "Успешная отправка",
+                message: "Ваша заявка проверена и успешно отправлена в базу данных!",
+                buttons: [{type: "ok"}]
+            }, function() {
+                tg.sendData(JSON.stringify(data));
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
