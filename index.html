@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Подача заявки</title>
+    <!-- ИСПРАВЛЕНО: Правильный скрипт Telegram Mini App -->
+    <script src="https://telegram.org"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: var(--tg-theme-bg-color, #ffffff); color: var(--tg-theme-text-color, #000000); padding: 15px; margin: 0; }
+        h2 { font-size: 20px; margin-top: 5px; margin-bottom: 20px; color: var(--tg-theme-text-color, #000000); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+        input, textarea, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; background-color: var(--tg-theme-secondary-bg-color, #f4f4f5); color: var(--tg-theme-text-color, #000000); }
+        input:focus, textarea:focus, select:focus { border-color: var(--tg-theme-button-color, #2481cc); outline: none; }
+        .btn { background-color: var(--tg-theme-button-color, #2481cc); color: var(--tg-theme-button-text-color, #ffffff); padding: 12px; border: none; border-radius: 8px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <h2>Новая заявка</h2>
+    <form id="orderForm">
+        <div class="form-group">
+            <label>Номер разрешения:</label>
+            <input type="text" id="permit_num" required maxlength="30">
+        </div>
+        <div class="form-group">
+            <label>Организация / ФИО:</label>
+            <input type="text" id="org_fio" required maxlength="80">
+        </div>
+        <div class="form-group">
+            <label>Номер телефона:</label>
+            <input type="tel" id="phone" placeholder="+375... или 80..." required>
+        </div>
+        <div class="form-group">
+            <label>Адрес раскопки:</label>
+            <input type="text" id="address" required maxlength="100">
+        </div>
+        
+        <div class="form-group">
+            <label>Время встречи:</label>
+            <select id="meeting_time" required>
+                <option value="" disabled selected>Выберите время встречи...</option>
+                <option value="10:00">10:00</option>
+                <option value="11:00">11:00</option>
+                <option value="12:00">12:00</option>
+                <option value="13:00">13:00</option>
+                <option value="14:00">14:00</option>
+                <option value="15:00">15:00</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Дата встречи:</label>
+            <!-- ИСПРАВЛЕНО: Заменено на select для 100% стабильности на iOS/Android -->
+            <select id="meeting_date" required>
+                <option value="" disabled selected>Сначала выберите время...</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Комментарий:</label>
+            <textarea id="comment" rows="3" maxlength="200"></textarea>
+        </div>
+        <button type="submit" class="btn">Отправить заявку</button>
+    </form>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        let busySlots = {};
+        const urlParams = new URLSearchParams(window.location.search);
+        const busyParam = urlParams.get('busy');
+        if (busyParam) {
+            try {
+                busySlots = JSON.parse(decodeURIComponent(busyParam));
+            } catch(e) {
+                console.error("Ошибка парсинга занятых слотов", e);
+            }
+        }
+
+        const dateSelect = document.getElementById('meeting_date');
+        const timeSelect = document.getElementById('meeting_time');
+
+        // Генерация доступных дат на ближайшие 7 дней (исключая занятые)
+        timeSelect.addEventListener('change', function() {
+            const selectedTime = this.value;
+            dateSelect.innerHTML = '<option value="" disabled selected>Выберите дату...</option>';
+            
+            if (!selectedTime) return;
+
+            const today = new Date();
+            for (let i = 0; i < 7; i++) {
+                const futureDate = new Date(today);
+                futureDate.setDate(today.getDate() + i);
+                
+                const year = futureDate.getFullYear();
+                const month = String(futureDate.getMonth() + 1).padStart(2, '0');
+                const day = String(futureDate.getDate()).padStart(2, '0');
+                const dateStr = `${year}-${month}-${day}`;
+
+                // Проверяем, занят ли слот
+                if (busySlots[selectedTime] && busySlots[selectedTime].includes(dateStr)) {
+                    continue; // Пропускаем занятую дату
+                }
+
+                const option = document.createElement('option');
+                option.value = dateStr;
+                option.textContent = futureDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', weekday: 'short' });
+                dateSelect.appendChild(option);
+            }
+        });
+
+        // Отправка формы
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const phoneInput = document.getElementById('phone');
+            const phone = phoneInput.value.trim().replace(/\s+/g, '');
+            
+            let isValidPhone = false;
+            if (phone.startsWith('+375') && phone.length >= 12) {
+                isValidPhone = true;
+            } else if (phone.startsWith('80') && phone.length === 11) {
+                isValidPhone = true;
+            }
+
+            if (!isValidPhone) {
+                tg.showAlert("❌ Неверный формат номера телефона!\n\nИспользуйте +375... или 80...");
+                phoneInput.focus();   
+                return;
+            }
+
+            const data = {
+                permit_num: document.getElementById('permit_num').value,
+                org_fio: document.getElementById('org_fio').value,
+                phone: phone,
+                address: document.getElementById('address').value,
+                meeting_date: dateSelect.value, 
+                meeting_time: timeSelect.value,
+                comment: document.getElementById('comment').value || '-'
+            };
+
+            // ИСПРАВЛЕНО: Безопасный метод отправки данных
+            try {
+                tg.sendData(JSON.stringify(data));
+                tg.close();
+            } catch (error) {
+                tg.showAlert("Ошибка отправки. Убедитесь, что приложение открыто через меню бота.");
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
