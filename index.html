@@ -83,7 +83,6 @@
             padding: 32px 28px 28px;
             box-shadow: var(--glass-shadow);
             transition: box-shadow var(--transition);
-            /* overflow: hidden;  УБИРАЕМ, чтобы выпадающие списки не обрезались */
             overflow: visible;
         }
 
@@ -221,7 +220,6 @@
         .custom-select {
             position: relative;
             width: 100%;
-            /* гарантируем, что dropdown не обрезается */
             overflow: visible;
         }
 
@@ -278,7 +276,7 @@
             top: calc(100% + 6px);
             left: 0;
             right: 0;
-            z-index: 1000; /* высокий z-index, чтобы быть поверх всего */
+            z-index: 1000;
             max-height: 0;
             overflow: hidden;
             opacity: 0;
@@ -295,7 +293,7 @@
         }
 
         .custom-select.open .select-dropdown {
-            max-height: 400px;          /* достаточно для 6 времени + 7 дат */
+            max-height: 420px;
             overflow-y: auto;
             opacity: 1;
             transform: translateY(0) scaleY(1);
@@ -303,7 +301,7 @@
         }
 
         .select-option {
-            padding: 8px 16px;          /* компактные отступы */
+            padding: 8px 16px;
             font-size: 15px;
             color: #fff;
             cursor: pointer;
@@ -455,383 +453,425 @@
 
 <body>
 
-<div class="app-wrapper">
-    <header class="app-header">
-        <h1>Заявка в МЛТЦ</h1>
-        <p>Вызов представителя на объект</p>
-    </header>
+    <div class="app-wrapper">
+        <header class="app-header">
+            <h1>Заявка в МЛТЦ</h1>
+            <p>Вызов представителя на объект</p>
+        </header>
 
-    <div class="glass-card">
-        <div id="message" aria-live="polite"></div>
+        <div class="glass-card">
+            <div id="message" aria-live="polite"></div>
 
-        <div class="step-indicator">
-            <span class="step-dot active" data-step="1">1</span>
-            <span class="step-dot" data-step="2">2</span>
-            <span class="step-dot" data-step="3">3</span>
-        </div>
-
-        <form id="orderForm" novalidate>
-            <!-- Шаг 1 -->
-            <div class="step active" data-step="1">
-                <div class="step-title">Контактная информация</div>
-                <div class="step-description">Укажите, кто подаёт заявку</div>
-
-                <div class="form-group">
-                    <label for="org_fio">Организация / ФИО</label>
-                    <input type="text" id="org_fio" maxlength="80"
-                           autocomplete="name" placeholder="Например, ООО «СтройСервис»" required />
-                </div>
-
-                <div class="form-group">
-                    <label for="phone">Номер телефона</label>
-                    <input type="tel" id="phone" maxlength="19"
-                           inputmode="tel" autocomplete="tel"
-                           placeholder="+375 (XX) XXX-XX-XX" required />
-                </div>
-
-                <div class="step-actions">
-                    <button type="button" class="btn btn-primary" onclick="goToStep(2)">Далее →</button>
-                </div>
+            <div class="step-indicator">
+                <span class="step-dot active" data-step="1">1</span>
+                <span class="step-dot" data-step="2">2</span>
+                <span class="step-dot" data-step="3">3</span>
             </div>
 
-            <!-- Шаг 2 -->
-            <div class="step" data-step="2">
-                <div class="step-title">Данные о раскопке</div>
-                <div class="step-description">Укажите адрес и номер разрешения</div>
+            <form id="orderForm" novalidate>
+                <!-- ШАГ 1 -->
+                <div class="step active" data-step="1">
+                    <div class="step-title">Контактная информация</div>
+                    <div class="step-description">Укажите, кто подаёт заявку</div>
 
-                <div class="form-group">
-                    <label for="permit_num">Номер разрешения</label>
-                    <input type="text" id="permit_num" maxlength="30"
-                           inputmode="numeric" autocomplete="off"
-                           placeholder="Только цифры" required />
+                    <div class="form-group">
+                        <label for="org_fio">Организация / ФИО</label>
+                        <input type="text" id="org_fio" maxlength="80"
+                        autocomplete="name" placeholder="Например, ООО «СтройСервис»" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Номер телефона</label>
+                        <input type="tel" id="phone" maxlength="19"
+                        inputmode="tel" autocomplete="tel"
+                        placeholder="+375 (XX) XXX-XX-XX" required />
+                    </div>
+
+                    <div class="step-actions">
+                        <button type="button" class="btn btn-primary" onclick="goToStep(2)">Далее →</button>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="address">Адрес раскопки</label>
-                    <input type="text" id="address" maxlength="100"
-                           autocomplete="street-address" placeholder="Улица, дом, ориентир" required />
+                <!-- ШАГ 2 -->
+                <div class="step" data-step="2">
+                    <div class="step-title">Данные о раскопке</div>
+                    <div class="step-description">Укажите адрес и номер разрешения</div>
+
+                    <div class="form-group">
+                        <label for="permit_num">Номер разрешения</label>
+                        <input type="text" id="permit_num" maxlength="30"
+                        inputmode="numeric" autocomplete="off"
+                        placeholder="Только цифры" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">Адрес раскопки</label>
+                        <input type="text" id="address" maxlength="100"
+                        autocomplete="street-address" placeholder="Улица, дом, ориентир" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="comment">Комментарий <span class="optional">(необязательно)</span></label>
+                        <textarea id="comment" rows="1" maxlength="200"
+                        placeholder="Дополнительная информация"></textarea>
+                    </div>
+
+                    <div class="step-actions">
+                        <button type="button" class="btn btn-secondary" onclick="goToStep(1)">← Назад</button>
+                        <button type="button" class="btn btn-primary" onclick="goToStep(3)">Далее →</button>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="comment">Комментарий <span class="optional">(необязательно)</span></label>
-                    <textarea id="comment" rows="1" maxlength="200"
-                              placeholder="Дополнительная информация"></textarea>
-                </div>
+                <!-- ШАГ 3 -->
+                <div class="step" data-step="3">
+                    <div class="step-title">Выбор времени</div>
+                    <div class="step-description">Когда удобно встретиться?</div>
 
-                <div class="step-actions">
-                    <button type="button" class="btn btn-secondary" onclick="goToStep(1)">← Назад</button>
-                    <button type="button" class="btn btn-primary" onclick="goToStep(3)">Далее →</button>
-                </div>
-            </div>
-
-            <!-- Шаг 3 -->
-            <div class="step" data-step="3">
-                <div class="step-title">Выбор времени</div>
-                <div class="step-description">Когда удобно встретиться?</div>
-
-                <div class="form-group">
-                    <label>Время встречи</label>
-                    <div class="custom-select" id="timeSelect">
-                        <button type="button" class="select-button" id="timeButton">
-                            <span id="timeButtonText" class="select-placeholder">Выберите время…</span>
-                            <span class="arrow"></span>
-                        </button>
-                        <div class="select-dropdown" id="timeDropdown">
-                            <div class="select-option" data-value="10:00">10:00</div>
-                            <div class="select-option" data-value="11:00">11:00</div>
-                            <div class="select-option" data-value="12:00">12:00</div>
-                            <div class="select-option" data-value="13:00">13:00</div>
-                            <div class="select-option" data-value="14:00">14:00</div>
-                            <div class="select-option" data-value="15:00">15:00</div>
+                    <div class="form-group">
+                        <label>Время встречи</label>
+                        <div class="custom-select" id="timeSelect">
+                            <button type="button" class="select-button" id="timeButton">
+                                <span id="timeButtonText" class="select-placeholder">Выберите время…</span>
+                                <span class="arrow"></span>
+                            </button>
+                            <div class="select-dropdown" id="timeDropdown">
+                                <div class="select-option" data-value="10:00">10:00</div>
+                                <div class="select-option" data-value="11:00">11:00</div>
+                                <div class="select-option" data-value="12:00">12:00</div>
+                                <div class="select-option" data-value="13:00">13:00</div>
+                                <div class="select-option" data-value="14:00">14:00</div>
+                                <div class="select-option" data-value="15:00">15:00</div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label>Дата встречи</label>
-                    <div class="custom-select locked" id="dateSelect">
-                        <button type="button" class="select-button" id="dateButton">
-                            <span id="dateButtonText" class="select-placeholder">Сначала выберите время…</span>
-                            <span class="arrow"></span>
-                        </button>
-                        <div class="select-dropdown" id="dateDropdown"></div>
+                    <div class="form-group">
+                        <label>Дата встречи</label>
+                        <div class="custom-select locked" id="dateSelect">
+                            <button type="button" class="select-button" id="dateButton">
+                                <span id="dateButtonText" class="select-placeholder">Сначала выберите время…</span>
+                                <span class="arrow"></span>
+                            </button>
+                            <div class="select-dropdown" id="dateDropdown"></div>
+                        </div>
+                    </div>
+
+                    <div class="step-actions">
+                        <button type="button" class="btn btn-secondary" onclick="goToStep(2)">← Назад</button>
+                        <button type="submit" class="btn btn-success" id="submitBtn">Отправить заявку</button>
                     </div>
                 </div>
+            </form>
 
-                <div class="step-actions">
-                    <button type="button" class="btn btn-secondary" onclick="goToStep(2)">← Назад</button>
-                    <button type="submit" class="btn btn-success" id="submitBtn">Отправить заявку</button>
-                </div>
-            </div>
-        </form>
+        </div>
     </div>
-</div>
 
-<script>
-    // ---------- Telegram ----------
-    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-    if (tg) { tg.ready(); tg.expand(); }
-
-    // ---------- Занятые слоты из URL (busy) ----------
-    let busySlots = {};
-    const urlParams = new URLSearchParams(window.location.search);
-    const busyParam = urlParams.get('busy');
-    if (busyParam) {
-        try {
-            busySlots = JSON.parse(decodeURIComponent(busyParam));
-        } catch(e) { console.error("Ошибка парсинга busy", e); }
-    }
-
-    // ---------- DOM ----------
-    const form = document.getElementById("orderForm");
-    const phoneInput = document.getElementById("phone");
-    const permitInput = document.getElementById("permit_num");
-    const orgInput = document.getElementById("org_fio");
-    const addressInput = document.getElementById("address");
-    const commentInput = document.getElementById("comment");
-    const timeSelect = document.getElementById("timeSelect");
-    const dateSelect = document.getElementById("dateSelect");
-    const timeButton = document.getElementById("timeButton");
-    const dateButton = document.getElementById("dateButton");
-    const timeButtonText = document.getElementById("timeButtonText");
-    const dateButtonText = document.getElementById("dateButtonText");
-    const timeDropdown = document.getElementById("timeDropdown");
-    const dateDropdown = document.getElementById("dateDropdown");
-    const submitBtn = document.getElementById("submitBtn");
-    const messageBox = document.getElementById("message");
-
-    let selectedTime = "";
-    let selectedDate = "";
-    let currentStep = 1;
-
-    // ---------- Авто-растяжение textarea ----------
-    function autoResize(el) {
-        el.style.height = 'auto';
-        el.style.height = el.scrollHeight + 'px';
-    }
-    commentInput.addEventListener('input', function() { autoResize(this); });
-    document.addEventListener('DOMContentLoaded', function() { autoResize(commentInput); });
-
-    // ---------- Шаги ----------
-    function goToStep(step) {
-        hideMessage();
-        if (step > currentStep) {
-            if (currentStep === 1) {
-                if (!orgInput.value.trim() || !phoneInput.value.trim()) {
-                    showMessage("Заполните организацию/ФИО и телефон.", "error");
-                    return;
-                }
-                if (phoneInput.value.length !== 19) {
-                    showMessage("Введите корректный номер телефона.", "error");
-                    phoneInput.focus();
-                    return;
-                }
-            } else if (currentStep === 2) {
-                if (!permitInput.value.trim() || !addressInput.value.trim()) {
-                    showMessage("Заполните номер разрешения и адрес.", "error");
-                    return;
-                }
-                if (!/^\d+$/.test(permitInput.value.trim())) {
-                    showMessage("Номер разрешения должен содержать только цифры.", "error");
-                    permitInput.focus();
-                    return;
-                }
-            }
-        }
-
-        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
-        document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
-
-        document.querySelectorAll('.step-dot').forEach(dot => {
-            const s = parseInt(dot.dataset.step);
-            dot.classList.remove('active', 'completed');
-            if (s === step) dot.classList.add('active');
-            else if (s < step) dot.classList.add('completed');
-        });
-
-        currentStep = step;
-        if (step === 3 && selectedTime) updateDates();
-    }
-
-    // ---------- Сообщения ----------
-    function showMessage(text, type = "error") {
-        messageBox.textContent = text;
-        messageBox.className = type;
-        setTimeout(() => messageBox.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
-    }
-    function hideMessage() {
-        messageBox.textContent = "";
-        messageBox.className = "";
-    }
-
-    // ---------- Кастомные селекты ----------
-    function closeAllSelects(except = null) {
-        document.querySelectorAll(".custom-select.open").forEach(sel => {
-            if (sel !== except) sel.classList.remove("open");
-        });
-    }
-
-    function setupCustomSelect(container, button, dropdown, textElement, onSelect) {
-        button.addEventListener("click", function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            if (container.classList.contains("locked")) {
-                if (container.id === "dateSelect") showMessage("Сначала выберите время.", "error");
-                button.blur();
-                return;
-            }
-            closeAllSelects(container);
-            container.classList.toggle("open");
-        });
-
-        dropdown.addEventListener("click", function(e) {
-            const option = e.target.closest(".select-option");
-            if (!option) return;
-            const value = option.dataset.value;
-            const text = option.textContent.trim();
-            textElement.textContent = text;
-            textElement.classList.remove("select-placeholder");
-            dropdown.querySelectorAll(".select-option").forEach(el => el.classList.remove("selected"));
-            option.classList.add("selected");
-            container.classList.remove("open");
-            onSelect(value, text);
-        });
-    }
-    document.addEventListener("click", () => closeAllSelects());
-
-    // ---------- Время ----------
-    setupCustomSelect(timeSelect, timeButton, timeDropdown, timeButtonText, function(value) {
-        selectedTime = value;
-        selectedDate = "";
-        dateSelect.classList.remove("locked");
-        dateButtonText.textContent = "Выберите дату…";
-        dateButtonText.classList.add("select-placeholder");
-        updateDates();
-    });
-
-    // ---------- Дата ----------
-    setupCustomSelect(dateSelect, dateButton, dateDropdown, dateButtonText, function(value) {
-        selectedDate = value;
-    });
-
-    // ---------- Обновление дат (7 рабочих дней, занятые пропускаем) ----------
-    function updateDates() {
-        dateDropdown.innerHTML = "";
-        selectedDate = "";
-
-        if (!selectedTime) return;
-
-        const today = new Date();
-        today.setDate(today.getDate() + 1);
-
-        let added = 0;
-        let offset = 0;
-
-        while (added < 7 && offset < 60) {
-            const date = new Date(today);
-            date.setDate(today.getDate() + offset);
-            offset++;
-
-            const day = date.getDay();
-            if (day === 0 || day === 6) continue;
-
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, "0");
-            const d = String(date.getDate()).padStart(2, "0");
-            const htmlDate = `${year}-${month}-${d}`;
-
-            // Если дата занята — пропускаем
-            if (busySlots[selectedTime] && busySlots[selectedTime].includes(htmlDate)) continue;
-
-            const option = document.createElement("div");
-            option.className = "select-option";
-            option.dataset.value = htmlDate;
-            option.textContent = date.toLocaleDateString("ru-RU", {
-                weekday: "short", day: "numeric", month: "long"
-            });
-            dateDropdown.appendChild(option);
-            added++;
-        }
-
-        if (added === 0) {
-            const empty = document.createElement("div");
-            empty.className = "select-option";
-            empty.textContent = "Свободных дат нет";
-            empty.style.color = "rgba(255,255,255,0.4)";
-            empty.style.cursor = "default";
-            dateDropdown.appendChild(empty);
-        }
-    }
-
-    // ---------- Маски ----------
-    phoneInput.addEventListener("focus", function() {
-        if (!this.value) this.value = "+375 ";
-    });
-
-    phoneInput.addEventListener("input", function(e) {
-        let digits = e.target.value.replace(/\D/g, "");
-        if (!digits) { e.target.value = "+375"; return; }
-        let formatted = "+375";
-        if (digits.length > 3) formatted += " (" + digits.substring(3, 5);
-        if (digits.length > 5) formatted += ") " + digits.substring(5, 8);
-        if (digits.length > 8) formatted += "-" + digits.substring(8, 10);
-        if (digits.length > 10) formatted += "-" + digits.substring(10, 12);
-        e.target.value = formatted;
-    });
-
-    permitInput.addEventListener("input", function() {
-        this.value = this.value.replace(/\D/g, "");
-    });
-
-    // ---------- Отправка ----------
-    form.addEventListener("submit", function(e) {
-        e.preventDefault();
-
-        if (!selectedTime || !selectedDate) {
-            showMessage("Выберите время и дату встречи.", "error");
-            return;
-        }
-
-        const data = {
-            permit_num: permitInput.value.trim(),
-            org_fio: orgInput.value.trim(),
-            phone: phoneInput.value.trim(),
-            address: addressInput.value.trim(),
-            meeting_date: selectedDate,
-            meeting_time: selectedTime,
-            comment: commentInput.value.trim() || "-"
-        };
-
+    <script>
+        // ---------- Инициализация Telegram ----------
+        const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+
+        // ---------- Занятые слоты из URL ----------
+        let busySlots = {};
+        const urlParams = new URLSearchParams(window.location.search);
+        const busyParam = urlParams.get('busy');
+        if (busyParam) {
             try {
-                tg.sendData(JSON.stringify(data));
-                showMessage("Заявка успешно отправлена.", "success");
-                submitBtn.disabled = true;
-                setTimeout(() => tg.close(), 1200);
-            } catch (error) {
-                showMessage("Ошибка отправки заявки.", "error");
-                console.error(error);
+                busySlots = JSON.parse(decodeURIComponent(busyParam));
+            } catch(e) { console.error("Ошибка парсинга busy", e); }
+        }
+
+        // ---------- DOM ----------
+        const form = document.getElementById("orderForm");
+        const phoneInput = document.getElementById("phone");
+        const permitInput = document.getElementById("permit_num");
+        const orgInput = document.getElementById("org_fio");
+        const addressInput = document.getElementById("address");
+        const commentInput = document.getElementById("comment");
+        const timeSelect = document.getElementById("timeSelect");
+        const dateSelect = document.getElementById("dateSelect");
+        const timeButton = document.getElementById("timeButton");
+        const dateButton = document.getElementById("dateButton");
+        const timeButtonText = document.getElementById("timeButtonText");
+        const dateButtonText = document.getElementById("dateButtonText");
+        const timeDropdown = document.getElementById("timeDropdown");
+        const dateDropdown = document.getElementById("dateDropdown");
+        const submitBtn = document.getElementById("submitBtn");
+        const messageBox = document.getElementById("message");
+
+        let selectedTime = "";
+        let selectedDate = "";
+        let currentStep = 1;
+
+        // ---------- Авто-растяжение textarea ----------
+        function autoResize(el) {
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+        }
+        commentInput.addEventListener('input', function() { autoResize(this); });
+        document.addEventListener('DOMContentLoaded', function() { autoResize(commentInput); });
+
+        // ---------- Шаги (с плавным скрытием ошибок) ----------
+        function goToStep(step) {
+            // 1. Валидация для перехода вперёд
+            if (step > currentStep) {
+                if (currentStep === 1) {
+                    if (!orgInput.value.trim() || !phoneInput.value.trim()) {
+                        showMessage("Заполните организацию/ФИО и телефон.", "error");
+                        return;
+                    }
+                    if (phoneInput.value.length !== 19) {
+                        showMessage("Введите корректный номер телефона.", "error");
+                        phoneInput.focus();
+                        return;
+                    }
+                } else if (currentStep === 2) {
+                    if (!permitInput.value.trim() || !addressInput.value.trim()) {
+                        showMessage("Заполните номер разрешения и адрес.", "error");
+                        return;
+                    }
+                    if (!/^\d+$/.test(permitInput.value.trim())) {
+                        showMessage("Номер разрешения должен содержать только цифры.", "error");
+                        permitInput.focus();
+                        return;
+                    }
+                }
             }
-        } else {
-            console.log("Данные формы:", data);
-            alert("Данные успешно сформированы! Посмотрите консоль браузера.");
-            // Сброс для демонстрации
-            form.reset();
+
+            // 2. Если сообщение не success, скрываем его с анимацией
+            const isSuccess = messageBox.classList.contains('success');
+            if (!isSuccess) {
+                hideMessage(); // сразу убираем класс, запускаем анимацию
+            }
+
+            // 3. Переключаем шаг с задержкой, чтобы анимация скрытия завершилась
+            const delay = isSuccess ? 0 : 400; // совпадает с transition (0.4s)
+
+            setTimeout(() => {
+                // Обновляем шаги
+                document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+                document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
+
+                document.querySelectorAll('.step-dot').forEach(dot => {
+                    const s = parseInt(dot.dataset.step);
+                    dot.classList.remove('active', 'completed');
+                    if (s === step) dot.classList.add('active');
+                    else if (s < step) dot.classList.add('completed');
+                });
+
+                currentStep = step;
+
+                if (step === 3 && selectedTime) {
+                    updateDates();
+                }
+            }, delay);
+        }
+
+        // ---------- Сообщения ----------
+        function showMessage(text, type = "error") {
+            messageBox.textContent = text;
+            messageBox.className = type;
+            setTimeout(() => {
+                messageBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+
+        function hideMessage() {
+            messageBox.textContent = "";
+            messageBox.className = "";
+        }
+
+        // ---------- Кастомные селекты ----------
+        function closeAllSelects(except = null) {
+            document.querySelectorAll(".custom-select.open").forEach(sel => {
+                if (sel !== except) sel.classList.remove("open");
+            });
+        }
+
+        function setupCustomSelect(container, button, dropdown, textElement, onSelect) {
+            button.addEventListener("click", function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (container.classList.contains("locked")) {
+                    if (container.id === "dateSelect") showMessage("Сначала выберите время.", "error");
+                    button.blur();
+                    return;
+                }
+                closeAllSelects(container);
+                container.classList.toggle("open");
+            });
+
+            dropdown.addEventListener("click", function(e) {
+                const option = e.target.closest(".select-option");
+                if (!option) return;
+                const value = option.dataset.value;
+                const text = option.textContent.trim();
+                textElement.textContent = text;
+                textElement.classList.remove("select-placeholder");
+                dropdown.querySelectorAll(".select-option").forEach(el => el.classList.remove("selected"));
+                option.classList.add("selected");
+                container.classList.remove("open");
+                onSelect(value, text);
+            });
+        }
+        document.addEventListener("click", () => closeAllSelects());
+
+        // ---------- Время ----------
+        setupCustomSelect(timeSelect, timeButton, timeDropdown, timeButtonText, function(value) {
+            selectedTime = value;
+            selectedDate = "";
+            dateSelect.classList.remove("locked");
+            dateButtonText.textContent = "Выберите дату…";
+            dateButtonText.classList.add("select-placeholder");
+            updateDates();
+        });
+
+        // ---------- Дата ----------
+        setupCustomSelect(dateSelect, dateButton, dateDropdown, dateButtonText, function(value) {
+            selectedDate = value;
+        });
+
+        // ---------- Обновление дат (7 рабочих дней, занятые пропускаем) ----------
+        function updateDates() {
+            dateDropdown.innerHTML = "";
+            selectedDate = "";
+
+            if (!selectedTime) return;
+
+            const today = new Date();
+            today.setDate(today.getDate() + 1);
+
+            let added = 0;
+            let offset = 0;
+
+            while (added < 7 && offset < 60) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + offset);
+                offset++;
+
+                const day = date.getDay();
+                if (day === 0 || day === 6) continue;
+
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, "0");
+                const d = String(date.getDate()).padStart(2, "0");
+                const htmlDate = `${year}-${month}-${d}`;
+
+                if (busySlots[selectedTime] && busySlots[selectedTime].includes(htmlDate)) continue;
+
+                const option = document.createElement("div");
+                option.className = "select-option";
+                option.dataset.value = htmlDate;
+                option.textContent = date.toLocaleDateString("ru-RU", {
+                    weekday: "short", day: "numeric", month: "long"
+                });
+                dateDropdown.appendChild(option);
+                added++;
+            }
+
+            if (added === 0) {
+                const empty = document.createElement("div");
+                empty.className = "select-option";
+                empty.textContent = "Свободных дат нет";
+                empty.style.color = "rgba(255,255,255,0.4)";
+                empty.style.cursor = "default";
+                dateDropdown.appendChild(empty);
+            }
+        }
+
+        // ---------- Маски ----------
+        phoneInput.addEventListener("focus", function() {
+            if (!this.value) this.value = "+375 ";
+        });
+
+        phoneInput.addEventListener("input", function(e) {
+            let digits = e.target.value.replace(/\D/g, "");
+            if (!digits) { e.target.value = "+375"; return; }
+            let formatted = "+375";
+            if (digits.length > 3) formatted += " (" + digits.substring(3, 5);
+            if (digits.length > 5) formatted += ") " + digits.substring(5, 8);
+            if (digits.length > 8) formatted += "-" + digits.substring(8, 10);
+            if (digits.length > 10) formatted += "-" + digits.substring(10, 12);
+            e.target.value = formatted;
+        });
+
+        permitInput.addEventListener("input", function() {
+            this.value = this.value.replace(/\D/g, "");
+        });
+
+        // ---------- Сброс состояния формы ----------
+        function resetFormState() {
+            permitInput.value = "";
+            orgInput.value = "";
+            phoneInput.value = "";
+            addressInput.value = "";
+            commentInput.value = "";
+            comment.style.height = '70px';
+
             selectedTime = "";
             selectedDate = "";
+
+            timeButtonText.textContent = "Выберите время…";
+            timeButtonText.classList.add("select-placeholder");
+            timeDropdown.querySelectorAll(".select-option").forEach(el => el.classList.remove("selected"));
+
             dateSelect.classList.add("locked");
             dateButtonText.textContent = "Сначала выберите время…";
             dateButtonText.classList.add("select-placeholder");
             dateDropdown.innerHTML = "";
-            timeButtonText.textContent = "Выберите время…";
-            timeButtonText.classList.add("select-placeholder");
-            timeDropdown.querySelectorAll(".select-option").forEach(el => el.classList.remove("selected"));
-            commentInput.style.height = '70px';
-            showMessage("Тестовая отправка выполнена.", "success");
-            goToStep(1);
         }
-    });
-</script>
+
+        // ---------- Отправка через Telegram ----------
+        form.addEventListener("submit", async function(e) {
+            e.preventDefault();
+
+            if (!selectedTime || !selectedDate) {
+                showMessage("Выберите время и дату встречи.", "error");
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Отправка…";
+
+            const data = {
+                permit_num: permitInput.value.trim(),
+                org_fio: orgInput.value.trim(),
+                phone: phoneInput.value.trim(),
+                address: addressInput.value.trim(),
+                meeting_date: selectedDate,
+                meeting_time: selectedTime,
+                comment: commentInput.value.trim() || "-"
+            };
+
+            if (tg) {
+                try {
+                    tg.sendData(JSON.stringify(data));
+                    showMessage("Заявка успешно отправлена.", "success");
+                    resetFormState();
+                    // Переходим на первый шаг, сообщение остаётся
+                    goToStep(1);
+                    setTimeout(() => tg.close(), 1200);
+                } catch (error) {
+                    showMessage("Ошибка отправки заявки.", "error");
+                    console.error(error);
+                }
+            } else {
+                // Режим тестирования вне Telegram
+                console.log("Данные формы:", data);
+                alert("Данные успешно сформированы! Посмотрите консоль браузера.");
+                // Сброс для демонстрации
+                resetFormState();
+                showMessage("Тестовая отправка выполнена.", "success");
+                goToStep(1);
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Отправить заявку";
+        });
+    </script>
 
 </body>
 </html>
